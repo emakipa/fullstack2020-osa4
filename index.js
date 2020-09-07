@@ -1,9 +1,11 @@
-require('dotenv').config()
+const config = require('./utils/config')
 const http = require('http')
 const express = require('express')
 const app = express()
 const cors = require('cors')
 const mongoose = require('mongoose')
+const logger = require('./utils/logger')
+const middleware = require('./utils/middleware')
 
 //returns the changed object to caller
 mongoose.set('useFindAndModify', false)
@@ -17,26 +19,19 @@ const blogSchema = new mongoose.Schema({
 
 const Blog = mongoose.model('Blog', blogSchema)
 
-const mongoUrl = process.env.MONGODB_URI
+const mongoUrl = config.MONGODB_URI
 mongoose.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true})
   .then(() => {
-    console.log('connected to MongoDB')
+    logger.info('connected to MongoDB')
   })
   .catch((error) => {
-    console.log('error connecting to MongoDB:', error.message)
+    logger.error('error connecting to MongoDB:', error.message)
   })
 app.use(cors())
 app.use(express.json())
 
-const requestLogger = (request, response, next) => {
-  console.log('Method:', request.method)
-  console.log('Path:  ', request.path)
-  console.log('Body:  ', request.body)
-  console.log('---')
-  next()
-}
-
-app.use(requestLogger)
+//custom request logger
+app.use(middleware.requestLogger)
 
 //routes
 
@@ -79,28 +74,12 @@ blogSchema.set('toJSON', {
 })
 
 // unknown endpoint handling
-const unknownEndpoint = (req, res) => {
-  res.status(404).send({ error: 'unknown endpoint' })
-}
-
-app.use(unknownEndpoint)
+app.use(middleware.unknownEndpoint)
 
 // unknown request handling
-const errorHandler = (error, req, res, next) => {
-  console.error(error.message)
+app.use(middleware.errorHandler)
 
-  if (error.name === 'CastError') {
-    return res.status(400).send({ error: 'malformatted id' })
-  } else if (error.name === 'ValidationError') {
-    return res.status(400).json({ error: error.message })
-  }
-
-  next(error)
-}
-
-app.use(errorHandler)
-
-const PORT = process.env.PORT || 3003
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
+//const PORT = process.env.PORT || 3003
+app.listen(config.PORT, () => {
+  logger.info(`Server running on port ${config.PORT}`)
 })

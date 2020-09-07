@@ -3,6 +3,7 @@ const http = require('http')
 const express = require('express')
 const app = express()
 const cors = require('cors')
+const blogsRouter = require('./controllers/blogs')
 const mongoose = require('mongoose')
 const Blog = require('./models/blog')
 const logger = require('./utils/logger')
@@ -26,35 +27,7 @@ app.use(express.json())
 app.use(middleware.requestLogger)
 
 //routes
-
-//get all blogs
-app.get('/api/blogs', (request, response) => {
-  Blog
-    .find({})
-    .then(blogs => {
-      response.json(blogs)
-    })
-})
-
-//add new blog
-app.post('/api/blogs', (request, response, next) => {
-  const body = request.body
-  
-  
-  const blog = new Blog({
-    title: body.title,
-    author: body.author,
-    url: body.url,
-    likes: body.likes
-  })
-
-  blog.save()
-    .then(savedBlog => savedBlog.toJSON())
-    .then(savedAndFormattedBlog => {
-      response.status(201).json(savedAndFormattedBlog)
-    })
-    .catch(error => next(error))
-})
+app.use('/api/blogs', blogsRouter)
 
 // unknown endpoint handling
 app.use(middleware.unknownEndpoint)

@@ -10,7 +10,7 @@ const mongoose = require('mongoose')
 //returns the changed object to caller
 mongoose.set('useFindAndModify', false)
 
-mongoose.connect(config.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true})
+mongoose.connect(config.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     logger.info('connected to MongoDB')
   })

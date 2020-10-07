@@ -4,4 +4,4 @@ Exercise submissions for [Full stack open 2020](https://fullstackopen.com/en) co
 
 ### osa4
 
-* blogilistan-backend (exrecises 4.1 - 4.7 done)
+* blogilistan-backend (exrecises 4.1 - 4.14 done)

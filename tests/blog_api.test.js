@@ -7,10 +7,11 @@ const api = supertest(app)
 
 beforeEach(async () => {
   await Blog.deleteMany({})
-  let blogObject = new Blog(helper.initialBlogs[0])
-  await blogObject.save()
-  blogObject = new Blog(helper.initialBlogs[1])
-  await blogObject.save()
+  await Blog.insertMany(helper.initialBlogs)
+  //let blogObject = new Blog(helper.initialBlogs[0])
+  //await blogObject.save()
+  //blogObject = new Blog(helper.initialBlogs[1])
+  //await blogObject.save()
 })
 
 describe('API GET tests', () => {
@@ -54,15 +55,25 @@ describe('API GET tests', () => {
 
 describe('API POST tests', () => {
   test('a valid blog can be added', async () => {
+    const users = await helper.usersInDatabase()
+
+    //login with existing username and password to get token
+    const auth = await api
+      .post('/api/login')
+      .send({ username: 'root', password: 'secret' })
+    const token = auth.body.token
+
     const newBlog = {
       title: 'React patterns',
       author: 'Michael Chan',
       url: 'https://reactpatterns.com/',
       likes: 0,
+      userId: users[0].id,
     }
 
     await api
       .post('/api/blogs')
+      .set('Authorization', 'bearer ' + token)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -86,14 +97,24 @@ describe('API POST tests', () => {
   })
 
   test('if likes is not given, it is set to zero', async () => {
+    const users = await helper.usersInDatabase()
+
+    //login with existing username and password to get token
+    const auth = await api
+      .post('/api/login')
+      .send({ username: 'root', password: 'secret' })
+    const token = auth.body.token
+
     const newBlog = {
       title: 'React patterns',
       author: 'Michael Chan',
       url: 'https://reactpatterns.com/',
+      userId: users[0].id,
     }
 
     await api
       .post('/api/blogs')
+      .set('Authorization', 'bearer ' + token)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -109,27 +130,62 @@ describe('API POST tests', () => {
   })
 
   test('if title is not given returns bad request 400', async () => {
+    const users = await helper.usersInDatabase()
+
+    //login with existing username and password to get token
+    const auth = await api
+      .post('/api/login')
+      .send({ username: 'root', password: 'secret' })
+    const token = auth.body.token
+
     const newBlog = {
       author: 'Michael Chan',
       url: 'https://reactpatterns.com/',
+      userId: users[0].id,
     }
 
     await api
       .post('/api/blogs')
+      .set('Authorization', 'bearer ' + token)
       .send(newBlog)
       .expect(400)
   })
 
   test('if url is not given returns bad request 400', async () => {
+    const users = await helper.usersInDatabase()
+
+    //login with existing username and password to get token
+    const auth = await api
+      .post('/api/login')
+      .send({ username: 'root', password: 'secret' })
+    const token = auth.body.token
+
     const newBlog = {
       title: 'React patterns',
       author: 'Michael Chan',
+      userId: users[0].id,
+    }
+
+    await api
+      .post('/api/blogs')
+      .set('Authorization', 'bearer ' + token)
+      .send(newBlog)
+      .expect(400)
+  })
+
+  test('if token is not included in request returns 401 unauthorized', async () => {
+    const users = await helper.usersInDatabase()
+
+    const newBlog = {
+      title: 'React patterns',
+      author: 'Michael Chan',
+      userId: users[0].id,
     }
 
     await api
       .post('/api/blogs')
       .send(newBlog)
-      .expect(400)
+      .expect(401)
   })
 })
 

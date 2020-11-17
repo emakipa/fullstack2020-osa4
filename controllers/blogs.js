@@ -14,7 +14,7 @@ blogsRouter.get('/:id', async (request, response) => {
   const blog = await Blog.findById(request.params.id)
 
   if (!blog) {
-    response.status(404).end()
+    response.status(404).json({ error: 'blog not found' })
   } else {
     response.json(blog)
   }
@@ -44,7 +44,7 @@ blogsRouter.post('/', async (request, response) => {
   })
 
   if(blog.title === undefined || blog.url === undefined) {
-    response.status(400).end()
+    response.status(400).json({ error: 'invalid title and/or url' })
   } else {
     const savedBlog = await blog.save()
     user.blogs = user.blogs.concat(savedBlog._id)
@@ -65,7 +65,7 @@ blogsRouter.put('/:id', async (request, response) => {
   }
 
   if (!blog) {
-    response.status(500).end()
+    response.status(500).json({ error: 'blog not found' })
   } else {
     const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, { new: true })
     response.status(201).json(updatedBlog.toJSON())

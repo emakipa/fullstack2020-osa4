@@ -43,7 +43,7 @@ blogsRouter.post('/', async (request, response) => {
     user: user._id
   })
 
-  if(blog.title === undefined || blog.url === undefined) {
+  if(blog.title === '' || blog.url === '') {
     response.status(400).json({ error: 'invalid title and/or url' })
   } else {
     const savedBlog = await blog.save()

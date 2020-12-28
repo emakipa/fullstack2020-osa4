@@ -72,6 +72,35 @@ blogsRouter.put('/:id', async (request, response) => {
   }
 })
 
+//comment blog
+blogsRouter.post('/:id/comments', async (request, response) => {
+  const body = request.body
+
+  const comment= body.comment
+
+  //get blog with request.params.id
+  const blog = await Blog.findById(request.params.id)
+  const comments = blog.comments.concat(comment)
+
+  //create blog with updated comments
+  const commentBlog = {
+    title: blog.title,
+    author: blog.author,
+    url: blog.url,
+    likes: blog.likes,
+    comments: comments
+  }
+
+  //update blog with updated comments
+  const commentedBlog = await Blog.findByIdAndUpdate(request.params.id, commentBlog, { new: true })
+
+  if(!commentedBlog) {
+    response.status(500).json({ error: 'blog not found' })
+  } else {
+    response.status(201).json(commentedBlog.toJSON())
+  }
+})
+
 //delete a specific blog
 blogsRouter.delete('/:id', async (request, response) => {
   //middleware is used to isolate token from authorization

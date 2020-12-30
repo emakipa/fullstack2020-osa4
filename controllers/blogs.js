@@ -33,14 +33,12 @@ blogsRouter.post('/', async (request, response) => {
   //get user with decode token id from users database
   const user = await User.findById(decodedToken.id)
 
-  //  const user = await User.findById(body.userId)
-
   const blog = new Blog({
     title: body.title,
     author: body.author,
     url: body.url,
     likes: body.likes || 0,
-    user: user._id
+    user: user
   })
 
   if(blog.title === '' || blog.url === '') {
